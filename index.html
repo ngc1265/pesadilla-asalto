@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asignación Asalto Pesadilla</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
         
@@ -527,14 +527,19 @@
             message.style.display = 'none';
             
             setTimeout(function() {
-                domtoimage.toPng(document.body, {
-                    quality: 0.95,
-                    bgcolor: '#0c0c0c'
+                html2canvas(document.body, {
+                    scale: 2,
+                    backgroundColor: '#0c0c0c',
+                    logging: false,
+                    useCORS: true
                 })
-                .then(function(dataUrl) {
+                .then(function(canvas) {
                     hint.style.display = '';
                     buttons.style.display = '';
                     captureBtn.textContent = originalCaptureText;
+                    
+                    // Convertir canvas a data URL
+                    const dataUrl = canvas.toDataURL('image/png', 0.95);
                     
                     capturedImage.src = dataUrl;
                     overlay.classList.add('show');
