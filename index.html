@@ -87,9 +87,16 @@
         
         .groups-container {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 20px;
             margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .groups-container {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
         }
         
         .group-section {
@@ -714,23 +721,30 @@
                     document.querySelector('.changes-indicator')
                 ];
                 
+                const groupsContainer = document.querySelector('.groups-container');
+                
                 // Ocultar elementos
                 elementsToHide.forEach(el => {
                     if (el) el.style.display = 'none';
                 });
+                
+                // FORZAR layout lado a lado para la captura
+                const originalGridColumns = groupsContainer.style.gridTemplateColumns;
+                groupsContainer.style.gridTemplateColumns = '1fr 1fr';
                 
                 // Verificar que html2canvas esté cargado
                 if (typeof html2canvas === 'undefined') {
                     elementsToHide.forEach(el => {
                         if (el) el.style.display = '';
                     });
+                    groupsContainer.style.gridTemplateColumns = originalGridColumns;
                     screenshotButton.disabled = false;
                     screenshotButton.textContent = '📸 Capturar Imagen';
                     alert('ERROR: La librería no se cargó. Recargá la página e intentá de nuevo.');
                     return;
                 }
                 
-                // Dar tiempo para que se oculten los elementos
+                // Dar tiempo para que se aplique el nuevo layout
                 setTimeout(() => {
                     html2canvas(document.body, {
                         scale: 2,
@@ -739,10 +753,11 @@
                         allowTaint: true,
                         useCORS: true
                     }).then(canvas => {
-                        // Restaurar elementos
+                        // Restaurar elementos Y layout original
                         elementsToHide.forEach(el => {
                             if (el) el.style.display = '';
                         });
+                        groupsContainer.style.gridTemplateColumns = originalGridColumns;
                         
                         // Descargar
                         canvas.toBlob(function(blob) {
@@ -776,6 +791,7 @@
                         elementsToHide.forEach(el => {
                             if (el) el.style.display = '';
                         });
+                        groupsContainer.style.gridTemplateColumns = originalGridColumns;
                         
                         console.error('Error:', error);
                         
