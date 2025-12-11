@@ -87,16 +87,9 @@
         
         .groups-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
             margin-top: 20px;
-        }
-        
-        @media (max-width: 768px) {
-            .groups-container {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
         }
         
         .group-section {
