@@ -562,53 +562,9 @@
         </div>
     </div>
 
-    <!-- Script para captura - usando método alternativo -->
+    <!-- Script para html2canvas -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script>
-        // Función simple de captura usando SVG + Canvas
-        function captureToImage(element, callback) {
-            const width = element.scrollWidth;
-            const height = element.scrollHeight;
-            
-            // Crear canvas
-            const canvas = document.createElement('canvas');
-            canvas.width = width * 2; // Escala 2x
-            canvas.height = height * 2;
-            const ctx = canvas.getContext('2d');
-            ctx.scale(2, 2);
-            
-            // Dibujar fondo
-            ctx.fillStyle = '#0c0c0c';
-            ctx.fillRect(0, 0, width, height);
-            
-            // Crear SVG con el HTML
-            const data = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-                    <foreignObject width="100%" height="100%">
-                        <div xmlns="http://www.w3.org/1999/xhtml">
-                            ${element.innerHTML}
-                        </div>
-                    </foreignObject>
-                </svg>
-            `;
-            
-            const img = new Image();
-            const blob = new Blob([data], {type: 'image/svg+xml;charset=utf-8'});
-            const url = URL.createObjectURL(blob);
-            
-            img.onload = function() {
-                ctx.drawImage(img, 0, 0);
-                URL.revokeObjectURL(url);
-                callback(canvas);
-            };
-            
-            img.onerror = function() {
-                URL.revokeObjectURL(url);
-                callback(null);
-            };
-            
-            img.src = url;
-        }
-        
         document.addEventListener('DOMContentLoaded', function() {
             const editablePlayers = document.querySelectorAll('.player.editable');
             const saveButton = document.getElementById('saveButton');
@@ -770,51 +726,72 @@
                     if (el) el.style.display = 'none';
                 });
                 
-                // Esperar un momento para que se oculten
+                // Verificar que html2canvas esté cargado
+                if (typeof html2canvas === 'undefined') {
+                    elementsToHide.forEach(el => {
+                        if (el) el.style.display = '';
+                    });
+                    screenshotButton.disabled = false;
+                    screenshotButton.textContent = '📸 Capturar Imagen';
+                    alert('ERROR: La librería no se cargó. Recargá la página e intentá de nuevo.');
+                    return;
+                }
+                
+                // Dar tiempo para que se oculten los elementos
                 setTimeout(() => {
-                    const container = document.querySelector('.container');
-                    
-                    captureToImage(container, function(canvas) {
+                    html2canvas(document.body, {
+                        scale: 2,
+                        backgroundColor: '#0c0c0c',
+                        logging: false,
+                        allowTaint: true,
+                        useCORS: true
+                    }).then(canvas => {
                         // Restaurar elementos
                         elementsToHide.forEach(el => {
                             if (el) el.style.display = '';
                         });
                         
-                        if (canvas) {
-                            // Convertir a blob
-                            canvas.toBlob(function(blob) {
-                                const url = URL.createObjectURL(blob);
-                                const link = document.createElement('a');
-                                const date = new Date().toISOString().slice(0,10);
-                                link.download = 'asalto_pesadilla_' + date + '.png';
-                                link.href = url;
-                                
-                                document.body.appendChild(link);
-                                link.click();
-                                document.body.removeChild(link);
-                                
-                                setTimeout(() => URL.revokeObjectURL(url), 100);
-                                
-                                screenshotButton.disabled = false;
-                                screenshotButton.textContent = '📸 Capturar Imagen';
-                                
-                                changesIndicator.className = 'changes-indicator visible saved';
-                                changesIndicator.textContent = '✅ Imagen guardada en Descargas!';
-                                
-                                setTimeout(() => {
-                                    if (!hasUnsavedChanges) {
-                                        changesIndicator.classList.remove('visible');
-                                    }
-                                }, 3000);
-                            }, 'image/png');
-                        } else {
-                            // Error - fallback a método manual
+                        // Descargar
+                        canvas.toBlob(function(blob) {
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            const date = new Date().toISOString().slice(0,10);
+                            link.download = 'asalto_pesadilla_' + date + '.png';
+                            link.href = url;
+                            
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            
+                            setTimeout(() => URL.revokeObjectURL(url), 100);
+                            
                             screenshotButton.disabled = false;
                             screenshotButton.textContent = '📸 Capturar Imagen';
-                            alert('No se pudo capturar automáticamente. Por favor:\n1. Hacé scroll hasta arriba\n2. Presioná Power + Volumen\n3. La imagen se guardará en tu galería');
-                        }
+                            
+                            changesIndicator.className = 'changes-indicator visible saved';
+                            changesIndicator.textContent = '✅ Imagen descargada!';
+                            
+                            setTimeout(() => {
+                                if (!hasUnsavedChanges) {
+                                    changesIndicator.classList.remove('visible');
+                                }
+                            }, 3000);
+                        }, 'image/png');
+                        
+                    }).catch(error => {
+                        // Restaurar en caso de error
+                        elementsToHide.forEach(el => {
+                            if (el) el.style.display = '';
+                        });
+                        
+                        console.error('Error:', error);
+                        
+                        screenshotButton.disabled = false;
+                        screenshotButton.textContent = '📸 Capturar Imagen';
+                        
+                        alert('Error al capturar: ' + error.message);
                     });
-                }, 300);
+                }, 500);
             }
             
             function downloadModifiedFile() {
