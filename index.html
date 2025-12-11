@@ -1,10 +1,7 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
+<html lang="es"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asignación Asalto Pesadilla</title>
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
         
@@ -18,18 +15,20 @@
             background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
             font-family: 'Orbitron', monospace;
             min-height: 100vh;
-            padding: 15px;
+            padding: 10px;
             color: #fff;
+            overflow-x: auto;
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 0 10px;
         }
         
         .title {
             text-align: center;
-            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
             font-weight: 900;
             margin-bottom: 20px;
             background: linear-gradient(45deg, #00f5ff, #ff00ff, #00ff41);
@@ -37,6 +36,8 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: gradientShift 3s ease-in-out infinite;
+            text-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+            padding: 0 10px;
         }
         
         @keyframes gradientShift {
@@ -44,72 +45,85 @@
             50% { background-position: 100% 50%; }
         }
         
-        .hint {
-            background: rgba(255, 215, 0, 0.15);
+        .edit-hint {
+            background: rgba(255, 215, 0, 0.1);
             color: #ffd700;
-            padding: 15px;
-            border-radius: 12px;
+            padding: 10px 15px;
+            border-radius: 8px;
             margin-bottom: 20px;
             text-align: center;
-            font-size: clamp(0.9rem, 2.5vw, 1rem);
-            border: 2px solid rgba(255, 215, 0, 0.4);
-            font-weight: 600;
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            font-family: 'Orbitron', monospace;
         }
         
-        .action-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-        
-        .action-btn {
-            display: inline-block;
-            padding: 25px;
+        .changes-indicator {
             text-align: center;
-            font-size: 20px;
-            font-weight: 700;
-            border-radius: 12px;
-            cursor: text;
-            user-select: none;
-            -webkit-user-select: none;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
         
-        .capture-btn {
-            background: linear-gradient(135deg, #00ff41, #00cc33);
-            color: #000;
-            box-shadow: 0 5px 20px rgba(0, 255, 65, 0.6);
+        .changes-indicator.visible {
+            opacity: 1;
         }
         
-        .save-btn {
-            background: linear-gradient(135deg, #00f5ff, #0099cc);
-            color: #000;
-            box-shadow: 0 5px 20px rgba(0, 245, 255, 0.6);
+        .changes-indicator.unsaved {
+            background: rgba(255, 165, 0, 0.2);
+            color: #ffa500;
+            border: 1px solid rgba(255, 165, 0, 0.5);
         }
         
-        .reset-btn {
-            background: linear-gradient(135deg, #ff00ff, #cc0099);
-            color: #fff;
-            box-shadow: 0 5px 20px rgba(255, 0, 255, 0.6);
+        .changes-indicator.saved {
+            background: rgba(0, 255, 65, 0.2);
+            color: #00ff41;
+            border: 1px solid rgba(0, 255, 65, 0.5);
         }
         
         .groups-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 20px;
+            margin-top: 20px;
         }
         
         @media (max-width: 768px) {
             .groups-container {
                 grid-template-columns: 1fr;
+                gap: 15px;
             }
         }
         
         .group-section {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
-            padding: 20px;
+            padding: 15px;
             backdrop-filter: blur(10px);
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            min-width: 0; /* Permite que el contenido se contraiga */
+        }
+        
+        .group-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 15px;
+            padding: 2px;
+            background: linear-gradient(45deg, #00f5ff, #ff00ff);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            -webkit-mask-composite: xor;
         }
         
         .group1 {
@@ -121,22 +135,31 @@
         }
         
         .group-title {
-            font-size: clamp(1.3rem, 4vw, 1.8rem);
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
             font-weight: 700;
             text-align: center;
-            margin-bottom: 20px;
-            padding: 15px;
-            border-radius: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            position: relative;
+            z-index: 1;
         }
         
         .group1 .group-title {
             background: linear-gradient(45deg, #00f5ff, #0077be);
             color: #000;
+            text-shadow: none;
         }
         
         .group2 .group-title {
             background: linear-gradient(45deg, #ff00ff, #8b008b);
             color: #fff;
+        }
+        
+        .table-container {
+            position: relative;
+            z-index: 1;
+            overflow-x: auto;
         }
         
         table {
@@ -145,13 +168,15 @@
             background: rgba(0, 0, 0, 0.4);
             border-radius: 10px;
             overflow: hidden;
+            min-width: 300px;
         }
         
         th {
-            padding: 15px 10px;
+            padding: clamp(8px, 2vw, 15px);
             font-weight: 700;
-            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            font-size: clamp(0.8rem, 2vw, 1rem);
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
         .group1 th {
@@ -165,424 +190,646 @@
         }
         
         td {
-            padding: 15px 10px;
+            padding: clamp(8px, 2vw, 12px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
+            vertical-align: top;
         }
         
         .line-number {
             font-weight: 700;
-            font-size: clamp(1rem, 3vw, 1.3rem);
-            width: 80px;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            width: clamp(60px, 15%, 80px);
         }
         
         .group1 .line-number {
             color: #00f5ff;
-            text-shadow: 0 0 10px #00f5ff;
+            text-shadow: 0 0 8px #00f5ff;
         }
         
         .group2 .line-number {
             color: #ff00ff;
-            text-shadow: 0 0 10px #ff00ff;
+            text-shadow: 0 0 8px #ff00ff;
         }
         
         .players {
             text-align: left;
-            padding-left: 15px;
+            font-weight: 400;
+            padding-left: clamp(8px, 2vw, 15px);
+            font-size: clamp(0.9rem, 2vw, 1.4rem);
         }
         
-        .player-name {
-            display: inline-block;
-            margin: 5px 5px;
-            padding: 10px 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            font-size: 18px;
-            cursor: text;
-            border: 2px solid transparent;
-            min-width: 80px;
-        }
-        
-        .player-name:focus {
-            background: #ffffff;
-            color: #000000;
-            border-color: #00f5ff;
-            outline: none;
-        }
-        
-        #message {
-            text-align: center;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            font-weight: 700;
-            display: none;
-        }
-        
-        #message.show {
+        .player {
             display: block;
+            padding: 4px 6px;
+            margin: 2px 0;
+            font-size: clamp(0.8rem, 2vw, 1.4rem);
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-radius: 4px;
+            position: relative;
+            word-break: break-word;
+            hyphens: auto;
         }
         
-        #message.success {
-            background: rgba(0, 255, 65, 0.25);
+        .player:hover {
             color: #00ff41;
-            border: 2px solid rgba(0, 255, 65, 0.6);
+            text-shadow: 0 0 8px #00ff41;
+            transform: translateX(5px);
+            background: rgba(0, 255, 65, 0.1);
         }
         
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 9999;
-            padding: 20px;
-            overflow-y: auto;
+        .player.editing {
+            background: rgba(255, 255, 255, 0.2);
+            outline: 2px solid #ffd700;
+            color: #ffd700;
         }
         
-        .overlay.show {
+        .player-input-multi {
+            background: rgba(255, 255, 255, 0.9) !important;
+            color: #000 !important;
+            border: none !important;
+            padding: 8px !important;
+            border-radius: 4px !important;
+            font-size: clamp(0.8rem, 2vw, 1.4rem) !important;
+            font-weight: 600 !important;
+            font-family: 'Orbitron', monospace !important;
+            width: 100% !important;
+            outline: 2px solid #ffd700 !important;
+            resize: vertical !important;
+            min-height: 60px !important;
+            max-height: 150px !important;
+        }
+        
+        .single-player {
+            font-weight: 500;
+        }
+        
+        tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+            transform: scale(1.01);
+            transition: all 0.3s ease;
+        }
+        
+        .controls {
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 30px 0 20px 0;
         }
         
-        .overlay img {
-            max-width: 90%;
-            max-height: 70vh;
-            border: 3px solid #00ff41;
-            border-radius: 10px;
+        .save-button, .reset-button, .screenshot-button {
+            padding: clamp(8px, 2vw, 12px) clamp(15px, 3vw, 25px);
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-width: 120px;
         }
         
-        .overlay-instructions {
-            background: #00ff41;
+        .save-button {
+            background: linear-gradient(45deg, #00ff41, #00cc33);
             color: #000;
-            padding: 20px;
-            border-radius: 10px;
-            font-weight: bold;
-            text-align: center;
-            margin-top: 20px;
-            font-size: 16px;
         }
         
-        .close-overlay {
-            display: inline-block;
-            background: #ff00ff;
+        .save-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 65, 0.4);
+        }
+        
+        .save-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .screenshot-button {
+            background: linear-gradient(45deg, #ff00ff, #8b008b);
             color: #fff;
-            padding: 15px 30px;
+        }
+        
+        .screenshot-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 0, 255, 0.4);
+        }
+        
+        .screenshot-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .reset-button {
+            background: linear-gradient(45deg, #ff6b35, #ff8e53);
+            color: #fff;
+        }
+        
+        .reset-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+        }
+        
+        .legend {
+            margin-top: 30px;
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
-            font-weight: bold;
-            margin-top: 20px;
-            font-size: 18px;
-            cursor: text;
+            backdrop-filter: blur(10px);
+        }
+        
+        .legend h3 {
+            color: #00ff41;
+            margin-bottom: 10px;
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+        }
+        
+        .legend p {
+            color: #ccc;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            line-height: 1.6;
+        }
+        
+        /* Mejoras para dispositivos táctiles */
+        @media (hover: none) {
+            .player:hover {
+                transform: none;
+            }
+            
+            .player {
+                padding: 8px 10px;
+                margin: 4px 0;
+            }
+        }
+        
+        /* Mejoras para pantallas muy pequeñas */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+            
+            .container {
+                padding: 0 5px;
+            }
+            
+            .group-section {
+                padding: 10px;
+                border-radius: 10px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .save-button, .reset-button, .screenshot-button {
+                width: 100%;
+                max-width: 250px;
+            }
+        }
+        
+        /* Mejoras para pantallas ultrapequenas */
+        @media (max-width: 320px) {
+            .groups-container {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            table {
+                min-width: 280px;
+            }
+            
+            .line-number {
+                width: 50px;
+            }
+        }
+        
+        /* Mejoras adicionales para tablet */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .groups-container {
+                grid-template-columns: 1fr;
+                max-width: 600px;
+                margin: 20px auto 0;
+            }
+            
+            .group-section {
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="title">🎮 ASIGNACIÓN ASALTO PESADILLA 🎮</h1>
+        <h1 class="title">⚡ ASIGNACIÓN ASALTO PESADILLA ⚡</h1>
         
-        <div class="hint">
-            ✏️ <strong>TOCA LOS BOTONES VERDES O LOS NOMBRES PARA EDITAR</strong>
+        <div class="edit-hint" style="">
+            💡 <strong>Haz clic en cualquier nombre de jugador para editarlo</strong> - Presiona Enter para guardar o Escape para cancelar
         </div>
         
-        <div id="message"></div>
-        
-        <div class="action-buttons">
-            <span class="action-btn capture-btn" id="captureBtn">📸 CAPTURAR IMAGEN</span>
-            <span class="action-btn save-btn" id="saveBtn">💾 GUARDAR HTML</span>
-            <span class="action-btn reset-btn" id="resetBtn">🔄 RESTAURAR ORIGINALES</span>
-        </div>
+        <div class="changes-indicator visible unsaved" id="changesIndicator" style="">⚠️ Tienes cambios sin guardar</div>
         
         <div class="groups-container">
+            <!-- GRUPO 1 -->
             <div class="group-section group1">
-                <div class="group-title">⚔️ GRUPO 1 ⚔️</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th class="line-number">LÍNEA</th>
-                            <th>JUGADORES</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="line-number">01</td>
-                            <td class="players">
-                                <span class="player-name" contenteditable="true" data-original="TAL">TAL</span>
-                                <span class="player-name" contenteditable="true" data-original="LORD_AYLOST">LORD_AYLOST</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="line-number">02</td>
-                            <td class="players">
-                                <span class="player-name" contenteditable="true" data-original="ROBERT">ROBERT</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="line-number">03</td>
-                            <td class="players">
-                                <span class="player-name" contenteditable="true" data-original="RETHYKUS">RETHYKUS</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="line-number">04</td>
-                            <td class="players">
-                                <span class="player-name" contenteditable="true" data-original="NEFERTITI">NEFERTITI</span>
-                                <span class="player-name" contenteditable="true" data-original="RIOKO">RIOKO</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="line-number">05</td>
-                            <td class="players">
-                                <span class="player-name" contenteditable="true" data-original="JOSE">JOSE</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="line-number">06</td>
-                            <td class="players">
-                                <span class="player-name" contenteditable="true" data-original="THUND">THUND</span>
-                                <span class="player-name" contenteditable="true" data-original="ZEUS">ZEUS</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="line-number">07</td>
-                            <td class="players">
-                                <span class="player-name" contenteditable="true" data-original="PESTANIUS">PESTANIUS</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="line-number">08</td>
-                            <td class="players">
-                                <span class="player-name" contenteditable="true" data-original="CRISARG">CRISARG</span>
-                                <span class="player-name" contenteditable="true" data-original="ROCOSO">ROCOSO</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="line-number">09</td>
-                            <td class="players">
-                                <span class="player-name" contenteditable="true" data-original="DOMLEVOIX">DOMLEVOIX</span>
-                                <span class="player-name" contenteditable="true" data-original="JIMGABALE">JIMGABALE</span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <h2 class="group-title">🎮 GRUPO 1</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>LÍNEA</th>
+                                <th>JUGADORES ASIGNADOS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="line-number">01</td>
+                                <td class="players"><span class="player editable" data-original="TAL">TAL</span><span class="player editable" data-original="LORD_AYLOST">LORD_AYLOST</span></td>
+                            </tr>
+                            <tr>
+                                <td class="line-number">02</td>
+                                <td class="players"><span class="player single-player editable modified" data-original="VACÍO">ROBERT</span></td>
+                            </tr>
+                            <tr>
+                                <td class="line-number">03</td>
+                                <td class="players"><span class="player single-player editable modified" data-original="MERLIN">RETHYKUS</span></td>
+                            </tr>
+                            <tr>
+                                <td class="line-number">04</td>
+                                <td class="players"><span class="player editable modified" data-original="VACÍO">NEFERTITI</span><span class="player editable" data-original="RIOKO">RIOKO</span></td>
+                            </tr>
+                            <tr>
+                                <td class="line-number">05</td>
+                                <td class="players"><span class="player single-player editable modified" data-original="THUND">JOSE</span></td>
+                            </tr>
+                            <tr>
+                                <td class="line-number">06</td>
+                                <td class="players"><span class="player editable modified" data-original="RETHYKUS">THUND</span><span class="player editable modified" data-original="BOB">ZEUS</span></td>
+                            </tr>
+                            <tr>
+                                <td class="line-number">07</td>
+                                <td class="players"><span class="player single-player editable" data-original="PESTANIUS">PESTANIUS</span></td>
+                            </tr>
+                            <tr>
+                                <td class="line-number">08</td>
+                                <td class="players"><span class="player editable modified" data-original="VACÍO">CRISARG</span><span class="player editable" data-original="ROCOSO">ROCOSO</span></td>
+                            </tr>
+                            <tr>
+                                <td class="line-number">09</td>
+                                <td class="players"><span class="player editable modified" data-original="JOSE">DOMLEVOIX</span><span class="player editable modified" data-original="ROBERT">JIMGABALE</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            
+
+            <!-- GRUPO 2 -->
             <div class="group-section group2">
-                <div class="group-title">🛡️ GRUPO 2 🛡️</div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th class="line-number">LÍNEA</th>
-                            <th>JUGADORES</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="line-number">01</td>
-                            <td class="players">
-                                <span class="player-name" contenteditable="true" data-original="RYAN">RYAN</span>
-                                <span class="player-name" contenteditable="true" data-original="PETRUS_NIGHTMARE">PETRUS_NIGHTMARE</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="line-number">02</td>
-                            <td class="players">
-                                <span class="player-name" contenteditable="true" data-original="MERLIN">MERLIN</span>
-                                <span class="player-name" contenteditable="true" data-original="KO">KO</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="line-number">03</td>
-                            <td class="players">
-                                <span class="player-name" contenteditable="true" data-original="MIRACLES">MIRACLES</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="line-number">04</td>
-                            <td class="players">
-                                <span class="player-name" contenteditable="true" data-original="NETERO">NETERO</span>
-                                <span class="player-name" contenteditable="true" data-original="JOK">JOK</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="line-number">05</td>
-                            <td class="players">
-                                <span class="player-name" contenteditable="true" data-original="BISPO666">BISPO666</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="line-number">06</td>
-                            <td class="players">
-                                <span class="player-name" contenteditable="true" data-original="PABLOZETH">PABLOZETH</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="line-number">07</td>
-                            <td class="players">
-                                <span class="player-name" contenteditable="true" data-original="EDWING">EDWING</span>
-                                <span class="player-name" contenteditable="true" data-original="DUKE">DUKE</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="line-number">08</td>
-                            <td class="players">
-                                <span class="player-name" contenteditable="true" data-original="KLAUSSLUNA">KLAUSSLUNA</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="line-number">09</td>
-                            <td class="players">
-                                <span class="player-name" contenteditable="true" data-original="MOSCAS">MOSCAS</span>
-                                <span class="player-name" contenteditable="true" data-original="SHADOW_SAM">SHADOW_SAM</span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <h2 class="group-title">🎮 GRUPO 2</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>LÍNEA</th>
+                                <th>JUGADORES ASIGNADOS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="line-number">01</td>
+                                <td class="players"><span class="player editable" data-original="RYAN">RYAN</span><span class="player editable modified" data-original="CRISARG">PETRUS_NIGHTMARE</span></td>
+                            </tr>
+                            <tr>
+                                <td class="line-number">02</td>
+                                <td class="players"><span class="player editable modified" data-original="VACÍO">MERLIN</span><span class="player editable" data-original="KO">KO</span></td>
+                            </tr>
+                            <tr>
+                                <td class="line-number">03</td>
+                                <td class="players"><span class="player single-player editable modified" data-original="DEPATY">MIRACLES</span></td>
+                            </tr>
+                            <tr>
+                                <td class="line-number">04</td>
+                                <td class="players">
+                                    <span class="player editable" data-original="NETERO">NETERO</span>
+                                    <span class="player editable" data-original="JOK">JOK</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="line-number">05</td>
+                                <td class="players"><span class="player single-player editable" data-original="BISPO666">BISPO666</span></td>
+                            </tr>
+                            <tr>
+                                <td class="line-number">06</td>
+                                <td class="players"><span class="player single-player editable" data-original="PABLOZETH">PABLOZETH</span></td>
+                            </tr>
+                            <tr>
+                                <td class="line-number">07</td>
+                                <td class="players"><span class="player editable" data-original="EDWING">EDWING</span><span class="player editable" data-original="DUKE">DUKE</span></td>
+                            </tr>
+                            <tr>
+                                <td class="line-number">08</td>
+                                <td class="players"><span class="player single-player editable modified" data-original="GABYLANDIA">KLAUSSLUNA</span></td>
+                            </tr>
+                            <tr>
+                                <td class="line-number">09</td>
+                                <td class="players"><span class="player editable" data-original="MOSCAS">MOSCAS</span><span class="player editable modified" data-original="DOMLEVOIX">SHADOW_SAM</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
-    
-    <!-- OVERLAY -->
-    <div class="overlay" id="overlay">
-        <img id="capturedImage" src="">
-        <div class="overlay-instructions">
-            📱 MANTENÉ PRESIONADA LA IMAGEN Y SELECCIONÁ "GUARDAR IMAGEN"
+
+        <div class="controls" style="">
+            <button class="save-button" id="saveButton">
+                💾 Descargar Cambios
+            </button>
+            <button class="screenshot-button" id="screenshotButton">📸 Capturar Imagen</button>
+            <button class="reset-button" id="resetButton">
+                🔄 Restaurar Original
+            </button>
         </div>
-        <span class="close-overlay" id="closeOverlay">✖ CERRAR</span>
+
+        <div class="legend" style="">
+            <h3>🎯 INFORMACIÓN</h3>
+            <p>Cada línea puede tener 1 o 2 jugadores asignados • Hover sobre los nombres para efecto visual • Diseño optimizado para gaming</p>
+        </div>
     </div>
 
+    <!-- Script para html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        const captureBtn = document.getElementById('captureBtn');
-        const saveBtn = document.getElementById('saveBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const message = document.getElementById('message');
-        const overlay = document.getElementById('overlay');
-        const capturedImage = document.getElementById('capturedImage');
-        const closeOverlay = document.getElementById('closeOverlay');
-        
-        const originalCaptureText = '📸 CAPTURAR IMAGEN';
-        const originalSaveText = '💾 GUARDAR HTML';
-        const originalResetText = '🔄 RESTAURAR ORIGINALES';
-        
-        function showMessage(text) {
-            message.textContent = text;
-            message.className = 'show success';
-            setTimeout(() => {
-                message.classList.remove('show');
-            }, 3000);
-        }
-        
-        // DETECTAR TOUCH EN LOS BOTONES Y EJECUTAR ACCIÓN
-        captureBtn.addEventListener('touchstart', function(e) {
-            e.preventDefault(); // Evita que se active contenteditable
-            captureImage();
-        });
-        
-        captureBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            captureImage();
-        });
-        
-        saveBtn.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-            saveHTML();
-        });
-        
-        saveBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            saveHTML();
-        });
-        
-        resetBtn.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-            resetNames();
-        });
-        
-        resetBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            resetNames();
-        });
-        
-        closeOverlay.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-            overlay.classList.remove('show');
-        });
-        
-        closeOverlay.addEventListener('click', function(e) {
-            e.preventDefault();
-            overlay.classList.remove('show');
-        });
-        
-        function captureImage() {
-            captureBtn.textContent = '📸 CAPTURANDO...';
+        document.addEventListener('DOMContentLoaded', function() {
+            const editablePlayers = document.querySelectorAll('.player.editable');
+            const saveButton = document.getElementById('saveButton');
+            const screenshotButton = document.getElementById('screenshotButton');
+            const resetButton = document.getElementById('resetButton');
+            const changesIndicator = document.getElementById('changesIndicator');
             
-            const hint = document.querySelector('.hint');
-            const buttons = document.querySelector('.action-buttons');
+            let hasUnsavedChanges = false;
             
-            hint.style.display = 'none';
-            buttons.style.display = 'none';
-            message.style.display = 'none';
+            editablePlayers.forEach(player => {
+                player.addEventListener('click', function() {
+                    startEdit(this);
+                });
+            });
             
-            setTimeout(function() {
-                html2canvas(document.body, {
-                    scale: 2,
-                    backgroundColor: '#0c0c0c',
-                    logging: false,
-                    useCORS: true
-                })
-                .then(function(canvas) {
-                    hint.style.display = '';
-                    buttons.style.display = '';
-                    captureBtn.textContent = originalCaptureText;
+            saveButton.addEventListener('click', function() {
+                downloadModifiedFile();
+            });
+            
+            screenshotButton.addEventListener('click', function() {
+                captureScreenshot();
+            });
+            
+            resetButton.addEventListener('click', function() {
+                if (confirm('¿Estás seguro de que quieres restaurar todos los nombres originales?')) {
+                    resetAllNames();
+                }
+            });
+            
+            function startEdit(playerElement) {
+                if (playerElement.querySelector('textarea')) return;
+                
+                // Obtener todos los jugadores de esta celda
+                const playersCell = playerElement.closest('.players');
+                const allPlayers = Array.from(playersCell.querySelectorAll('.player.editable'));
+                const playerTexts = allPlayers.map(p => p.textContent);
+                
+                // Crear textarea en lugar de input
+                const textarea = document.createElement('textarea');
+                textarea.value = playerTexts.join('\n');
+                textarea.className = 'player-input-multi';
+                
+                // Limpiar la celda y agregar textarea
+                playersCell.innerHTML = '';
+                playersCell.appendChild(textarea);
+                
+                textarea.focus();
+                textarea.select();
+                
+                function saveEdit() {
+                    const lines = textarea.value.split('\n').map(line => line.trim()).filter(line => line.length > 0);
                     
-                    // Convertir canvas a data URL
-                    const dataUrl = canvas.toDataURL('image/png', 0.95);
+                    // Limpiar celda
+                    playersCell.innerHTML = '';
                     
-                    capturedImage.src = dataUrl;
-                    overlay.classList.add('show');
+                    // Crear nuevos elementos span para cada jugador
+                    lines.forEach((playerName, index) => {
+                        const span = document.createElement('span');
+                        span.className = lines.length === 1 ? 'player single-player editable' : 'player editable';
+                        span.textContent = playerName;
+                        
+                        // Buscar el nombre original correspondiente
+                        let originalName = playerName; // fallback
+                        if (allPlayers[index]) {
+                            originalName = allPlayers[index].getAttribute('data-original');
+                        }
+                        span.setAttribute('data-original', originalName);
+                        
+                        // Marcar como modificado si cambió
+                        if (playerName !== originalName) {
+                            span.classList.add('modified');
+                        }
+                        
+                        // Agregar evento de click
+                        span.addEventListener('click', function() {
+                            startEdit(this);
+                        });
+                        
+                        playersCell.appendChild(span);
+                    });
                     
-                    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                    if (!isMobile) {
-                        const a = document.createElement('a');
-                        const date = new Date().toISOString().slice(0,10).replace(/-/g,'');
-                        a.download = 'pesadilla_' + date + '.png';
-                        a.href = dataUrl;
-                        a.click();
+                    // Si no hay jugadores, agregar un placeholder
+                    if (lines.length === 0) {
+                        const span = document.createElement('span');
+                        span.className = 'player single-player editable';
+                        span.textContent = 'VACÍO';
+                        span.setAttribute('data-original', 'VACÍO');
+                        span.addEventListener('click', function() {
+                            startEdit(this);
+                        });
+                        playersCell.appendChild(span);
                     }
-                })
-                .catch(function(error) {
-                    hint.style.display = '';
-                    buttons.style.display = '';
-                    captureBtn.textContent = originalCaptureText;
-                    alert('ERROR: ' + error.message);
+                    
+                    // Verificar cambios
+                    const hasChanges = playersCell.querySelector('.player.modified');
+                    if (hasChanges) {
+                        markAsChanged();
+                    } else {
+                        checkForChanges();
+                    }
+                }
+                
+                function cancelEdit() {
+                    // Restaurar elementos originales
+                    playersCell.innerHTML = '';
+                    allPlayers.forEach(player => {
+                        playersCell.appendChild(player);
+                    });
+                }
+                
+                textarea.addEventListener('blur', saveEdit);
+                textarea.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        cancelEdit();
+                    }
                 });
-            }, 500);
-        }
-        
-        function saveHTML() {
-            const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-            const blob = new Blob([html], {type: 'text/html;charset=utf-8'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            const date = new Date().toISOString().slice(0,10).replace(/-/g,'');
-            a.download = 'pesadilla_' + date + '.html';
-            a.href = url;
-            a.click();
-            URL.revokeObjectURL(url);
-            showMessage('✅ HTML GUARDADO!');
-        }
-        
-        function resetNames() {
-            if (confirm('¿Restaurar todos los nombres originales?')) {
-                document.querySelectorAll('.player-name').forEach(player => {
-                    player.textContent = player.getAttribute('data-original');
-                });
-                showMessage('✅ NOMBRES RESTAURADOS!');
             }
-        }
+            
+            function markAsChanged() {
+                hasUnsavedChanges = true;
+                saveButton.disabled = false;
+                changesIndicator.className = 'changes-indicator visible unsaved';
+                changesIndicator.textContent = '⚠️ Tienes cambios sin guardar';
+            }
+            
+            function markAsSaved() {
+                hasUnsavedChanges = false;
+                saveButton.disabled = true;
+                changesIndicator.className = 'changes-indicator visible saved';
+                changesIndicator.textContent = '✅ Cambios guardados correctamente';
+                
+                setTimeout(() => {
+                    changesIndicator.classList.remove('visible');
+                }, 3000);
+            }
+            
+            function checkForChanges() {
+                const modifiedPlayers = document.querySelectorAll('.player.modified');
+                if (modifiedPlayers.length === 0) {
+                    hasUnsavedChanges = false;
+                    saveButton.disabled = true;
+                    changesIndicator.classList.remove('visible');
+                }
+            }
+            
+            function captureScreenshot() {
+                // Detectar si es mobile
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                
+                screenshotButton.disabled = true;
+                screenshotButton.textContent = '📸 Preparando...';
+                
+                const elementsToHide = [
+                    document.querySelector('.edit-hint'),
+                    document.querySelector('.controls'),
+                    document.querySelector('.legend'),
+                    document.querySelector('.changes-indicator')
+                ];
+                
+                elementsToHide.forEach(el => {
+                    if (el) el.style.display = 'none';
+                });
+                
+                if (isMobile) {
+                    // MOBILE: Preparar para screenshot manual
+                    setTimeout(() => {
+                        alert('✅ LISTO! Ahora hacé screenshot con Power + Volumen. La imagen se guardará en tu galería.');
+                        
+                        // Esperar a que el usuario haga OK y luego restaurar
+                        elementsToHide.forEach(el => {
+                            if (el) el.style.display = '';
+                        });
+                        screenshotButton.disabled = false;
+                        screenshotButton.textContent = '📸 Capturar Imagen';
+                    }, 500);
+                } else {
+                    // DESKTOP: Usar html2canvas
+                    const options = {
+                        allowTaint: true,
+                        useCORS: true,
+                        scale: 2,
+                        backgroundColor: '#0c0c0c',
+                        width: document.body.scrollWidth,
+                        height: document.body.scrollHeight,
+                        scrollX: 0,
+                        scrollY: 0
+                    };
+                    
+                    html2canvas(document.body, options).then(canvas => {
+                        elementsToHide.forEach(el => {
+                            if (el) el.style.display = '';
+                        });
+                        
+                        const link = document.createElement('a');
+                        link.download = 'asalto_pesadilla_' + new Date().toISOString().slice(0,10) + '.jpg';
+                        link.href = canvas.toDataURL('image/jpeg', 0.95);
+                        
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
+                        screenshotButton.disabled = false;
+                        screenshotButton.textContent = '📸 Capturar Imagen';
+                        
+                        changesIndicator.className = 'changes-indicator visible saved';
+                        changesIndicator.textContent = '✅ Imagen capturada correctamente';
+                        
+                        setTimeout(() => {
+                            if (!hasUnsavedChanges) {
+                                changesIndicator.classList.remove('visible');
+                            }
+                        }, 3000);
+                    }).catch(error => {
+                        elementsToHide.forEach(el => {
+                            if (el) el.style.display = '';
+                        });
+                        
+                        console.error('Error al capturar imagen:', error);
+                        
+                        screenshotButton.disabled = false;
+                        screenshotButton.textContent = '📸 Capturar Imagen';
+                        
+                        alert('Error al capturar la imagen. Por favor, intenta de nuevo.');
+                    });
+                }
+            }
+            
+            function downloadModifiedFile() {
+                const htmlContent = document.documentElement.outerHTML;
+                
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'pesadilla_responsive_modificado.html';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                markAsSaved();
+            }
+            
+            function resetAllNames() {
+                editablePlayers.forEach(player => {
+                    const originalText = player.getAttribute('data-original');
+                    player.textContent = originalText;
+                    player.classList.remove('modified');
+                });
+                
+                hasUnsavedChanges = false;
+                saveButton.disabled = true;
+                changesIndicator.classList.remove('visible');
+            }
+            
+            window.addEventListener('beforeunload', function(e) {
+                if (hasUnsavedChanges) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                    return '';
+                }
+            });
+        });
     </script>
-</body>
-</html>
+
+
+</body></html>
