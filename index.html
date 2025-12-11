@@ -714,50 +714,56 @@
                 screenshotButton.disabled = true;
                 screenshotButton.textContent = '📸 Capturando...';
                 
-                const elementsToHide = [
-                    document.querySelector('.edit-hint'),
-                    document.querySelector('.controls'),
-                    document.querySelector('.legend'),
-                    document.querySelector('.changes-indicator')
-                ];
-                
-                const groupsContainer = document.querySelector('.groups-container');
-                
-                // Ocultar elementos
-                elementsToHide.forEach(el => {
-                    if (el) el.style.display = 'none';
-                });
-                
-                // FORZAR layout lado a lado para la captura
-                const originalGridColumns = groupsContainer.style.gridTemplateColumns;
-                groupsContainer.style.gridTemplateColumns = '1fr 1fr';
-                
-                // Verificar que html2canvas esté cargado
                 if (typeof html2canvas === 'undefined') {
-                    elementsToHide.forEach(el => {
-                        if (el) el.style.display = '';
-                    });
-                    groupsContainer.style.gridTemplateColumns = originalGridColumns;
                     screenshotButton.disabled = false;
                     screenshotButton.textContent = '📸 Capturar Imagen';
                     alert('ERROR: La librería no se cargó. Recargá la página e intentá de nuevo.');
                     return;
                 }
                 
-                // Dar tiempo para que se aplique el nuevo layout
+                // Crear contenedor temporal ANCHO para la captura
+                const captureContainer = document.createElement('div');
+                captureContainer.style.cssText = `
+                    position: fixed;
+                    top: -10000px;
+                    left: 0;
+                    width: 1600px;
+                    background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+                    padding: 30px;
+                    font-family: 'Orbitron', monospace;
+                    color: #fff;
+                `;
+                
+                // Clonar el título
+                const title = document.querySelector('.title').cloneNode(true);
+                captureContainer.appendChild(title);
+                
+                // Clonar el container de grupos
+                const groupsContainer = document.querySelector('.groups-container').cloneNode(true);
+                groupsContainer.style.cssText = `
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 30px;
+                    margin-top: 30px;
+                `;
+                captureContainer.appendChild(groupsContainer);
+                
+                // Agregar al body
+                document.body.appendChild(captureContainer);
+                
+                // Capturar después de un momento
                 setTimeout(() => {
-                    html2canvas(document.body, {
+                    html2canvas(captureContainer, {
                         scale: 2,
                         backgroundColor: '#0c0c0c',
                         logging: false,
                         allowTaint: true,
-                        useCORS: true
+                        useCORS: true,
+                        width: 1600,
+                        height: captureContainer.scrollHeight
                     }).then(canvas => {
-                        // Restaurar elementos Y layout original
-                        elementsToHide.forEach(el => {
-                            if (el) el.style.display = '';
-                        });
-                        groupsContainer.style.gridTemplateColumns = originalGridColumns;
+                        // Eliminar contenedor temporal
+                        document.body.removeChild(captureContainer);
                         
                         // Descargar
                         canvas.toBlob(function(blob) {
@@ -787,11 +793,10 @@
                         }, 'image/png');
                         
                     }).catch(error => {
-                        // Restaurar en caso de error
-                        elementsToHide.forEach(el => {
-                            if (el) el.style.display = '';
-                        });
-                        groupsContainer.style.gridTemplateColumns = originalGridColumns;
+                        // Eliminar contenedor en caso de error
+                        if (document.body.contains(captureContainer)) {
+                            document.body.removeChild(captureContainer);
+                        }
                         
                         console.error('Error:', error);
                         
@@ -800,7 +805,7 @@
                         
                         alert('Error al capturar: ' + error.message);
                     });
-                }, 500);
+                }, 800);
             }
             
             function downloadModifiedFile() {
