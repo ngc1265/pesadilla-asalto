@@ -721,31 +721,79 @@
                     return;
                 }
                 
-                // Crear contenedor temporal ANCHO para la captura
+                // Crear contenedor temporal ANCHO para la captura (2 grupos)
                 const captureContainer = document.createElement('div');
                 captureContainer.style.cssText = `
                     position: fixed;
                     top: -10000px;
                     left: 0;
-                    width: 1600px;
+                    width: 1750px;
                     background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
-                    padding: 30px;
+                    padding: 40px;
                     font-family: 'Orbitron', monospace;
                     color: #fff;
                 `;
                 
                 // Clonar el título
                 const title = document.querySelector('.title').cloneNode(true);
+                title.style.fontSize = '3.8rem';
+                title.style.marginBottom = '35px';
                 captureContainer.appendChild(title);
                 
-                // Clonar el container de grupos
-                const groupsContainer = document.querySelector('.groups-container').cloneNode(true);
+                // Crear contenedor para los 2 grupos
+                const groupsContainer = document.createElement('div');
                 groupsContainer.style.cssText = `
                     display: grid;
                     grid-template-columns: 1fr 1fr;
-                    gap: 30px;
-                    margin-top: 30px;
+                    gap: 40px;
+                    margin-top: 35px;
                 `;
+                
+                // Clonar los 2 grupos
+                const groups = document.querySelectorAll('.group-section');
+                groups.forEach(group => {
+                    const clonedGroup = group.cloneNode(true);
+                    
+                    // AUMENTAR tamaño de letra de nombres de jugadores
+                    const players = clonedGroup.querySelectorAll('.player-name');
+                    players.forEach(player => {
+                        player.style.fontSize = '2.2rem';
+                        player.style.padding = '18px 22px';
+                        player.style.fontWeight = '700';
+                        player.style.lineHeight = '1.3';
+                    });
+                    
+                    // Aumentar tamaño del título del grupo
+                    const groupTitle = clonedGroup.querySelector('.group-title');
+                    if (groupTitle) {
+                        groupTitle.style.fontSize = '2.8rem';
+                        groupTitle.style.padding = '22px';
+                        groupTitle.style.fontWeight = '900';
+                    }
+                    
+                    // Aumentar tamaño de números de línea
+                    const lineNumbers = clonedGroup.querySelectorAll('.line-number');
+                    lineNumbers.forEach(num => {
+                        num.style.fontSize = '2rem';
+                        num.style.fontWeight = '900';
+                    });
+                    
+                    // Aumentar tamaño de headers de tabla
+                    const tableHeaders = clonedGroup.querySelectorAll('th');
+                    tableHeaders.forEach(th => {
+                        th.style.fontSize = '1.7rem';
+                        th.style.padding = '18px';
+                    });
+                    
+                    // Aumentar padding de celdas
+                    const tableCells = clonedGroup.querySelectorAll('td');
+                    tableCells.forEach(td => {
+                        td.style.padding = '18px 14px';
+                    });
+                    
+                    groupsContainer.appendChild(clonedGroup);
+                });
+                
                 captureContainer.appendChild(groupsContainer);
                 
                 // Agregar al body
@@ -759,7 +807,7 @@
                         logging: false,
                         allowTaint: true,
                         useCORS: true,
-                        width: 1600,
+                        width: 1750,
                         height: captureContainer.scrollHeight
                     }).then(canvas => {
                         // Eliminar contenedor temporal
